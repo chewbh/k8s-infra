@@ -51,25 +51,45 @@ WEAVE_KUBE_IMAGE=$(docker_img_from_yaml $WEAVE_NET_FILE 'weave-kube')
 WEAVE_NPC_IMAGE=$(docker_img_from_yaml $WEAVE_NET_FILE 'weave-npc')
 
 FLANNEL_FILE="https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml"
-FLANNEL_IMAGE=$(docker_img_from_yaml $FLANNEL_FILE '')
+FLANNEL_IMAGES=(
+"quay.io/coreos/flannel:v0.11.0-amd64"
+"quay.io/coreos/flannel:v0.11.0-arm64"
+"quay.io/coreos/flannel:v0.11.0-arm"
+"quay.io/coreos/flannel:v0.11.0-ppc64le"
+"quay.io/coreos/flannel:v0.11.0-s390x"
+)
 
-# image: quay.io/coreos/flannel:v0.11.0-amd64
-#        image: quay.io/coreos/flannel:v0.11.0-amd64
-#        image: quay.io/coreos/flannel:v0.11.0-arm64
-#        image: quay.io/coreos/flannel:v0.11.0-arm64
-#        image: quay.io/coreos/flannel:v0.11.0-arm
-#        image: quay.io/coreos/flannel:v0.11.0-arm
-#        image: quay.io/coreos/flannel:v0.11.0-ppc64le
-#        image: quay.io/coreos/flannel:v0.11.0-ppc64le
-#        image: quay.io/coreos/flannel:v0.11.0-s390x
-#        image: quay.io/coreos/flannel:v0.11.0-s390x
+PROM_OPER_FILE="https://raw.githubusercontent.com/coreos/prometheus-operator/master/bundle.yaml"
+PROM_OPER_IMAGE="quay.io/coreos/prometheus-operator:v0.31.1"
+PROM_OPER_IMAGE_30="quay.io/coreos/prometheus-operator:v0.30.0"
+PROM_OPER_CONFIGMAP_RELOAD_IMAGE="quay.io/coreos/configmap-reload:v0.0.1"
+PROM_OPER_CONFIG_RELOADER_IMAGE="quay.io/coreos/prometheus-config-reloader:v0.31.1"
+
+K8S_PROM_OPER_IMAGES=(
+$PROM_OPER_IMAGE_30
+$PROM_OPER_IMAGE
+$PROM_OPER_CONFIGMAP_RELOAD_IMAGE
+$PROM_OPER_CONFIG_RELOADER_IMAGE
+"k8s.gcr.io/addon-resizer:1.8.4"
+"quay.io/coreos/kube-rbac-proxy:v0.4.1"
+"quay.io/coreos/kube-state-metrics:v1.5.0"
+"quay.io/prometheus/node-exporter:v0.18.1"
+"quay.io/prometheus/prometheus:v2.10.0"
+"quay.io/prometheus/alertmanager:v0.17.0")
+# git clone https://github.com/coreos/kube-prometheus.git
+
+METALLB_FILE="https://raw.githubusercontent.com/google/metallb/v0.8.0/manifests/metallb.yaml"
+METALLB_SPEAKER_IMAGE=$(docker_img_from_yaml $METALLB_FILE 'metallb/speaker')
+METALLB_CTRL_IMAGE=$(docker_img_from_yaml $METALLB_FILE 'metallb/controller')
 
 #########################
 # D/L and prepare setup
 #########################
 
-IMAGE_LIST=($DASHBOARD_IMAGE $WEAVE_KUBE_IMAGE $WEAVE_NPC_IMAGE) 
-YAML_FILE_LIST=($K8S_DASHBOARD_FILE $WEAVE_NET_FILE)
+IMAGE_LIST=($DASHBOARD_IMAGE $WEAVE_KUBE_IMAGE $WEAVE_NPC_IMAGE $PROM_OPER_IMAGE $PROM_OPER_CONFIGMAP_RELOAD_IMAGE $PROM_OPER_CONFIG_RELOADER_IMAGE) 
+IMAGE_LIST=("${IMAGE_LIST[@]}" "${FLANNEL_IMAGES[@]}" "${K8S_PROM_OPER_IMAGES[@]}" $METALLB_SPEAKER_IMAGE $METALLB_CTRL_IMAGE)
+
+YAML_FILE_LIST=($K8S_DASHBOARD_FILE $WEAVE_NET_FILE $PROM_OPER_FILE $FLANNEL_FILE $METALLB_FILE)
 # echo ${IMAGE_LIST[*]}
 # echo ${YAML_FILE_LIST[*]}
 
