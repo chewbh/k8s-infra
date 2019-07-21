@@ -98,6 +98,7 @@ do
   curl $YAML -s -k -O
 done
 mv *.yaml $DL_YAML_PATH
+mv *.yml $DL_YAML_PATH
 
 # generate the loading script for k8s addons
 echo "#!/bin/bash" > load_k8s_addons_images.sh
