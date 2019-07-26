@@ -1,0 +1,6 @@
+---
+- name: Base setup for "{{ host_list }}" nodes
+  hosts: "{{ host_list }}"
+  gather_facts: yes
+  roles:
+    - common

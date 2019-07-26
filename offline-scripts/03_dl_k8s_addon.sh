@@ -7,12 +7,12 @@ DL_PATH=$PWD/$DL_IMAGE_PATH
 mkdir -p $DL_PATH
 mkdir -p $DL_YAML_PATH
 
-K8S_STABLE_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+K8S_STABLE_VERSION=$(curl -s -k https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 echo "Using latest Kubernetes stable version: $K8S_STABLE_VERSION"
 # echo "Kubectl version: $(kubectl version)"
 
 docker_img_from_yaml() {
-  local IMAGE_LINE=$(curl -s $1 | grep $2)
+  local IMAGE_LINE=$(curl -s -k $1 | grep $2)
   local IMAGE_TAG="${IMAGE_LINE##* }"
   IMAGE_TAG=$(echo $IMAGE_TAG | xargs)
   # echo $IMAGE_LINE

@@ -1,0 +1,84 @@
+---
+- name: "create {{ ssh_user.name }} if not exist"
+  user:
+    name: "{{ ssh_user.name }}"
+    state: present
+  become: yes
+  tags:
+    - user
+    - never
+
+- name: "generate ssh key for {{ ssh_user.name }}"
+  user:
+    name: "{{ ssh_user.name }}"
+    generate_ssh_key: yes
+    ssh_key_comment: "ansible-generated for {{ ssh_user.name }}@{{ ansible_hostname }}"
+    ssh_key_file: .ssh/id_rsa
+    ssh_key_bits: 2048
+  become: yes
+  tags:
+    - ssh
+    - never
+
+- name: "install fetched {{ ssh_user.name }}'s public ssh keys to all hosts"
+  authorized_key:
+    user: "{{ ssh_user.name }}"
+    key: "{{ lookup('file', '/tmp/ansible/ssh_public_key/' + ssh_user.name + '/' + item + '/id_rsa.pub') }}"
+    with_items: "{{ groups['all'] }}"
+    when: ssh_user.passwordless
+    tags:
+      - ssh
+      - never
+
+- name: "check temp local public ssh key copies exist"
+  local_action: state path="/tmp/ansible/ssh_public_keys"
+  become: no
+  register: temp_public_ssh_keys
+  run_once: true
+  tags:
+    - ssh
+    - never
+
+- name: remove temp local public ssh key copies
+  local_action: file dest="/tmp/ansible/ssh_public_keys" state=absent
+  become: no
+  when: temp_public_ssh_keys.stat.exists == True
+  changed_when: false
+  run_once: true
+  tags:
+    - ssh
+    - never
+
+- name: scan host for its ssh public key
+  shell: "ssh-keyscan {{ item }},{{ hostvars[item]['ansible_hostname'] | default(hostvars[item]['ansible_host'])"
+  with_items: "{{ groups['all'] }}"
+  register: ssh_known_host_results
+  ignore_errors: yes
+  tags:
+    - ssh
+    - never
+
+- name: install the public key in the known_hosts file for {{ ssh_user.name }}
+  known_hosts:
+    name: "{{ item.item }}"
+    key: "{{ item.stdout }}"
+    path: "{{ ssh_user.home_dir | default('/home/' + ssh_user.name) }}/.ssh/known_hosts"
+  with_items: "{{ ssh_known_host_results.results }}"
+  become: yes
+  tags:
+    - ssh
+    - never
+
+- import_tasks: sudoer.yml
+  tags:
+    - user
+    - never
+
+- name: add {{ ssh_user.name }} to sudo group
+  user:
+    name: "{{ ssh_user.name }}"
+    groups: sudo
+    append: yes
+
+
+

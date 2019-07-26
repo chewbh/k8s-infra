@@ -1,0 +1,22 @@
+---
+- name: check zsh binary path
+  command: which zsh
+  register: zsh_dir
+
+- name: ensure zsh is in /etc/shells
+  lineinfile:
+    dest: /etc/shells
+    state: present
+    regexp: 'zsh$'
+    line: "{{ zsh_dir.stdout }}"
+  become: yes
+
+- name: switch to zsh
+  command: chsh -s {{ zsh_dir.stdout }} {{ ssh_user.name }}
+  loop_control:
+    loop_var: ssh_user
+  with_items: "{{ os_users }}"
+  when: (ssh_user.shell | default('')) == 'zsh'
+  become: yes
+  ignore_errors: yes
+

@@ -1,0 +1,26 @@
+
+os_users:
+  - name: person
+    passwordless: yes
+    enabled_as_ansible_user: yes
+    shell: zsh
+
+disabled_firewall: no
+
+disabled_selinux: yes
+
+yum:
+  rhel:
+    repo_url: ''
+    enabled: false
+  extras:
+    repo_url: ''
+    enabled: false
+  optional:
+    repo_url: ''
+    enabled: false
+  docker:
+    repo_url: ''
+    enabled: false
+
+

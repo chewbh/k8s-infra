@@ -1,0 +1,14 @@
+---
+- name: install epel release
+  yum:
+    name: epel-release
+    state: present
+  become: yes
+  when: is_online
+
+- name: install other basic os utilities
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ base_os_packages | join(',') }}"
+  become: yes

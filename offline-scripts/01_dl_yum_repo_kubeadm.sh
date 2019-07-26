@@ -17,7 +17,7 @@ if [ -d "$BASE_PATH/$REPOS_NAME/repos" ]; then
 fi
 
 # download the official kubernetes yum repo
-wget -r -nH -np -N -R "index.html*" -e robots=off -P $BASE_PATH/tmp $DL_URL
+wget --no-check-certificate -r -nH -np -N -R "index.html*" -e robots=off -P $BASE_PATH/tmp $DL_URL
 
 # remove any duplicate accidentially created
 find $BASE_PATH/tmp/$DL_BASE_PATH -name \*.1 -type f -delete
@@ -28,14 +28,14 @@ mv $BASE_PATH/tmp/$DL_BASE_PATH/repos/* $BASE_PATH/$REPOS_NAME/repos
 rm -rf $BASE_PATH/tmp
 
 # download the gpg keys
-wget -N -P $BASE_PATH/$REPOS_NAME https://packages.cloud.google.com/yum/doc/yum-key.gpg
-wget -N -P $BASE_PATH/$REPOS_NAME https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+wget --no-check-certificate -N -P $BASE_PATH/$REPOS_NAME https://packages.cloud.google.com/yum/doc/yum-key.gpg
+wget --no-check-certificate -N -P $BASE_PATH/$REPOS_NAME https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 
 # download the actual kubernete binaries based on info from the downloaded repodata
 mkdir -p $BASE_PATH/$REPOS_NAME/pool
 grep -Po 'href="\.\./\.\./\K.*?(?=")' $BASE_PATH/$REPOS_NAME/repos/$PKGS_SUBPATH/repodata/primary.xml | while read -r filename ; do
   echo "downloading https://$DL_BASEURL/$DL_BASE_PATH/$filename"
-  wget -nc -P $BASE_PATH/$REPOS_NAME/pool https://$DL_BASEURL/$DL_BASE_PATH/$filename
+  wget --no-check-certificate -nc -P $BASE_PATH/$REPOS_NAME/pool https://$DL_BASEURL/$DL_BASE_PATH/$filename
 done
 
 #cat <<EOF > /etc/yum.repos.d/kubernetes.repo

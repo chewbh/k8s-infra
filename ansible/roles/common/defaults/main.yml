@@ -1,0 +1,26 @@
+---
+tmp_dir: tempfiles
+
+base_os_packages:
+  - openssl
+  - openssl-devel
+  - vim
+  - tmux
+  - wget
+  - curl
+  - nfs-utils
+  - cifs-utils
+  - tar
+  - unzip
+  - git
+  - tree
+  - rsync
+  - zsh
+  - python-devel
+  - python-docker-py
+
+  - python-pip
+  - openssh-client
+  - htop
+  - jq
+  - xclip

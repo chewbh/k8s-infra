@@ -1,0 +1,17 @@
+---
+# handlers
+
+- name: restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+    enabled: yes
+  become: yes
+
+- name: restart ntp
+  systemd:
+    name: ntpd
+    state: restarted
+    enabled: yes
+  become: yes
+  ignore_errors: yes

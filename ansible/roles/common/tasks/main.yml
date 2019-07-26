@@ -1,0 +1,101 @@
+
+# hosts file?
+# dns?
+
+- name: configure os users
+  include_tasks: users.yml
+  with_items: "{{ os_users }}"
+  loop_control:
+    loop_var: ssh_user
+  tags:
+    - user
+    - never
+
+- name: add OS yum repo
+
+- name: add OS optional yum repo
+  yum_repository:
+    name: extras
+    description: centos-extras
+    baseurl: "{{ yum.extras.repo_url }}"
+    file: centos-extras
+    gpgcheck: no
+    sslverify: no
+    enabled: yes
+  become: yes
+  when: yum.extras.enabled
+  tags:
+    - pkgmgr
+    - never
+
+- name: add OS optional yum repo
+  yum_repository:
+    name: optional
+    description: centos-optional
+    baseurl: "{{ yum.epel.repo_url }}"
+    file: centos-optional
+    gpgcheck: no
+    sslverify: no
+    enabled: yes
+  become: yes
+  when: yum.optional.enabled
+  tags:
+    - pkgmgr
+    - never
+
+- name: add EPEL repo
+  yum_repository:
+    name: epel
+    description: Additional packages from Fedora EPEL channel
+    baseurl: "{{ yum.epel.repo_url }}"
+    file: epel
+    gpgcheck: no
+    sslverify: no
+    enabled: "{{ yum.epel.enabled }}"
+  become: yes
+  when: not is_online
+  tags:
+    - pkgmgr
+    - epel
+
+- name: install yum utility for recovery from yum failure
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - yum-utils
+  become: yes
+  when: ansible_os_family|lower == 'redhat'
+  tags:
+    - pkgmgr
+
+- name: install useful os utilities and packages
+  import_tasks: useful_utilities.yml
+  tags:
+    - os_tools
+
+- name: use different TMPDIR
+  template:
+    src: tmpdir.sh.j2
+    dest: /etc/profile.d/tmpdir.sh
+    mode: "755"
+  become: yes
+
+- name: disable selinux
+  selinux: 
+    state: disabled
+  become: yes
+  tags: selinux
+  when: disable_selinux
+
+- name: configure ntp
+  include_tasks: ntp.yml
+  tags:
+    - ntp
+    - never
+
+- import_tasks: ulimit.yml
+
+- import_tasks: firewall.yml
+
+- import_tasks: zsh.yml
